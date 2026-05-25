@@ -12,6 +12,7 @@
                     editingQuery: initialQuery,
                     editing: false,
                     saving: false,
+                    expanded: true,
                     error: '',
                     success: '',
 
@@ -22,6 +23,10 @@
                         }
                         this.error = '';
                         this.success = '';
+                    },
+
+                    toggleExpanded() {
+                        this.expanded = !this.expanded;
                     },
 
                     async saveQuery() {
@@ -76,13 +81,30 @@
     <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold text-zinc-100">SQL Query</h3>
         <div class="flex gap-2">
+            <!-- Expand/Collapse Button -->
+            <button
+                @click="toggleExpanded()"
+                class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-zinc-800 px-3 py-2 text-zinc-300 hover:bg-zinc-700 transition"
+                :title="expanded ? 'Contraer' : 'Expandir'"
+            >
+                <svg x-show="expanded" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+                <svg x-show="!expanded" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
             <!-- Edit Button -->
             <button
                 x-show="!editing"
                 @click="toggleEdit()"
-                class="rounded-lg border border-white/10 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 transition"
+                class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-zinc-800 px-3 py-2 text-zinc-300 hover:bg-zinc-700 transition"
+                title="Editar query"
             >
-                ✎ Editar
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
             </button>
 
             <!-- Save/Cancel Buttons -->
@@ -90,23 +112,29 @@
                 <button
                     @click="saveQuery()"
                     :disabled="saving"
-                    class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition"
+                    class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition"
                 >
-                    <span x-show="!saving">✓ Guardar</span>
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span x-show="!saving">Guardar</span>
                     <span x-show="saving">Guardando...</span>
                 </button>
                 <button
                     @click="toggleEdit()"
-                    class="rounded-lg border border-white/10 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 transition"
+                    class="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 transition"
                 >
-                    ✕ Cancelar
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Cancelar
                 </button>
             </div>
         </div>
     </div>
 
     <!-- Display Mode -->
-    <div x-show="!editing" class="rounded-lg border border-white/10 bg-zinc-950 p-4 overflow-hidden">
+    <div x-show="expanded && !editing" class="rounded-lg border border-white/10 bg-zinc-950 p-4 overflow-hidden">
         <pre class="text-zinc-300 text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words"><code x-text="originalQuery"></code></pre>
     </div>
 
