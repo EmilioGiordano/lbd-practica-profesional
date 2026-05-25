@@ -1,3 +1,25 @@
+@php
+    use Illuminate\Support\Facades\File;
+
+    $ticketLinks = collect(File::files(resource_path('views/tickets')))
+        ->map(function ($file) {
+            preg_match('/ticket-(\d+)\.blade\.php$/', $file->getFilename(), $numberMatch);
+            preg_match('/title="([^"]+)"/', File::get($file->getPathname()), $titleMatch);
+
+            if (! isset($numberMatch[1])) {
+                return null;
+            }
+
+            return [
+                'number' => (int) $numberMatch[1],
+                'title' => $titleMatch[1] ?? "Ticket {$numberMatch[1]}",
+            ];
+        })
+        ->filter()
+        ->sortBy('number')
+        ->values();
+@endphp
+
 <nav x-data="{ open: false }" class="border-b border-white/10 bg-[#09090b]/95 backdrop-blur">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,20 +34,20 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('tickets.show', 1)" :active="request()->routeIs('tickets.show') && request()->route('ticketNumber') == 1">
-                        {{ __('Ticket 1') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('tickets.show', 2)" :active="request()->routeIs('tickets.show') && request()->route('ticketNumber') == 2">
-                        {{ __('Ticket 2') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('tickets.show', 3)" :active="request()->routeIs('tickets.show') && request()->route('ticketNumber') == 3">
-                        {{ __('Ticket 3') }}
-                    </x-nav-link>
+                    @foreach ($ticketLinks as $ticketLink)
+                        <x-nav-link href="{{ route('tickets.show', $ticketLink['number']) }}" :active="request()->routeIs('tickets.show') && (int) request()->route('ticketNumber') === $ticketLink['number']">
+                            {{ __($ticketLink['title']) }}
+                        </x-nav-link>
+                    @endforeach
                 </div>
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:gap-4 sm:ms-6">
+                @auth
+                    <x-create-ticket-modal />
+                @endauth
+
                 @auth
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
@@ -78,15 +100,11 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('tickets.show', 1)" :active="request()->routeIs('tickets.show') && request()->route('ticketNumber') == 1">
-                {{ __('Ticket 1') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('tickets.show', 2)" :active="request()->routeIs('tickets.show') && request()->route('ticketNumber') == 2">
-                {{ __('Ticket 2') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('tickets.show', 3)" :active="request()->routeIs('tickets.show') && request()->route('ticketNumber') == 3">
-                {{ __('Ticket 3') }}
-            </x-responsive-nav-link>
+            @foreach ($ticketLinks as $ticketLink)
+                <x-responsive-nav-link href="{{ route('tickets.show', $ticketLink['number']) }}" :active="request()->routeIs('tickets.show') && (int) request()->route('ticketNumber') === $ticketLink['number']">
+                    {{ __($ticketLink['title']) }}
+                </x-responsive-nav-link>
+            @endforeach
         </div>
 
         <!-- Responsive Settings Options -->

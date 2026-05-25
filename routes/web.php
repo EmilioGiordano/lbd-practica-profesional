@@ -20,6 +20,15 @@ Route::get('/api/tickets/{ticketNumber}/execute', [TicketController::class, 'exe
     ->whereNumber('ticketNumber')
     ->name('tickets.execute');
 
+Route::post('/api/tickets/create', [TicketController::class, 'apiCreate'])
+    ->name('tickets.api.create');
+
+Route::get('/api/tickets/next-number', [TicketController::class, 'nextNumber'])
+    ->name('tickets.next-number');
+
+Route::post('/api/tickets/update-query', [TicketController::class, 'updateQuery'])
+    ->name('tickets.update-query');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

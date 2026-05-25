@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\TicketService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -35,8 +37,60 @@ class TicketController extends Controller
 
         abort_unless(view()->exists($view), Response::HTTP_NOT_FOUND, 'La vista del ticket no existe.');
 
+        $queryPath = database_path("queries/ticket-{$ticketNumber}.sql");
+        $query = File::exists($queryPath) ? File::get($queryPath) : 'SELECT * FROM carriers';
+
         return view($view, [
             'ticketNumber' => $ticketNumber,
+            'query' => $query,
+        ]);
+    }
+
+    public function apiCreate(Request $request, TicketService $ticketService): JsonResponse
+    {
+        $validated = $request->validate([
+            'numero' => 'required|integer|min:1',
+            'titulo' => 'required|string|max:255',
+        ]);
+
+        $result = $ticketService->createTicket($validated['numero'], $validated['titulo']);
+
+        if ($result['success']) {
+            return response()->json($result, Response::HTTP_CREATED);
+        }
+
+        return response()->json($result, Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function nextNumber(TicketService $ticketService): JsonResponse
+    {
+        $nextNumber = $ticketService->getNextTicketNumber();
+
+        return response()->json([
+            'nextNumber' => $nextNumber,
+        ]);
+    }
+
+    public function updateQuery(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'numero' => 'required|integer|min:1',
+            'query' => 'required|string',
+        ]);
+
+        $queryPath = database_path("queries/ticket-{$validated['numero']}.sql");
+
+        if (!File::exists($queryPath)) {
+            return response()->json([
+                'message' => "El archivo SQL del ticket {$validated['numero']} no existe.",
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        File::put($queryPath, $validated['query']);
+
+        return response()->json([
+            'message' => 'Query actualizada exitosamente.',
+            'numero' => $validated['numero'],
         ]);
     }
 
@@ -50,7 +104,7 @@ class TicketController extends Controller
 
         if ($sql === '') {
             return response()->json([
-                'message' => 'El archivo SQL esta vacio.',
+                'message' => "El archivo SQL esta vacio: {$sqlPath}",
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
