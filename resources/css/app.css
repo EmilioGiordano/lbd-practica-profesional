@@ -5,3 +5,84 @@
 [x-cloak] {
     display: none !important;
 }
+
+body {
+    color: #fafaf9;
+    background: #120f0d;
+}
+
+.sql-spinner {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    border: 4px solid rgba(255, 255, 255, 0.08);
+    border-top-color: #34d399;
+    animation: sql-spin 0.8s linear infinite;
+}
+
+.sql-cell {
+    display: inline-block;
+    max-width: 24rem;
+    overflow-wrap: anywhere;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.9rem;
+    background: #221c18;
+    padding: 0.45rem 0.7rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #e7e5e4;
+}
+
+.sql-cell-null {
+    border-color: rgba(251, 191, 36, 0.18);
+    background: rgba(120, 53, 15, 0.28);
+    color: #fcd34d;
+    font-weight: 600;
+}
+
+.sql-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: #211b18;
+    padding: 0.85rem 1rem;
+    color: #a8a29e;
+    font-size: 0.92rem;
+}
+
+.sql-inline-stat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.12);
+    padding: 0.9rem 1rem;
+}
+
+.sql-inline-stat__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #78716c;
+}
+
+.sql-inline-stat__value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+@keyframes sql-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

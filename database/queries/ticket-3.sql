@@ -1,4 +1,9 @@
-SELECT schemaname, relname, indexname, indexdef
-FROM pg_indexes
-WHERE schemaname = 'public'
-ORDER BY relname, indexname
+SELECT
+    id,
+    name,
+    email,
+    email_verified_at,
+    created_at,
+    updated_at
+FROM users
+ORDER BY id
