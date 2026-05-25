@@ -66,23 +66,34 @@
 
     <section class="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div class="overflow-hidden rounded-[30px] border border-[#3a3029] bg-[#1a1512] shadow-[0_18px_45px_-28px_rgba(0,0,0,0.8)]">
-            <div class="border-b border-white/5 px-6 py-5">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <p class="text-2xl font-semibold text-stone-100">Resultado de la consulta</p>
-                        <p class="mt-1 text-sm text-stone-400">
-                            Tabla dinamica generada desde el JSON devuelto por el backend.
-                        </p>
-                    </div>
+                <div class="border-b border-white/5 px-6 py-5">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <p class="text-2xl font-semibold text-stone-100">Resultado de la consulta</p>
+                            <p class="mt-1 text-sm text-stone-400">
+                                Tabla dinamica generada desde el JSON devuelto por el backend.
+                            </p>
+                        </div>
 
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div class="rounded-full border border-white/5 bg-black/10 px-3 py-2 text-xs font-medium text-stone-400">
-                            Maximo visible: <span class="text-stone-200" x-text="rows.length"></span> filas
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="min-w-[260px]">
+                                <label for="table-search-{{ $ticketNumber }}" class="sr-only">Buscar en resultados</label>
+                                <input
+                                    id="table-search-{{ $ticketNumber }}"
+                                    type="text"
+                                    x-model="search"
+                                    @input="page = 1"
+                                    placeholder="Buscar en resultados..."
+                                    class="w-full rounded-2xl border border-[#3a3029] bg-[#171310] px-4 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-emerald-700 focus:ring-emerald-900"
+                                >
+                            </div>
+                            <div class="rounded-full border border-white/5 bg-black/10 px-3 py-2 text-xs font-medium text-stone-400">
+                                Mostrando: <span class="text-stone-200" x-text="filteredRows.length"></span> de <span class="text-stone-200" x-text="rows.length"></span>
+                            </div>
+                            <div class="rounded-full border border-white/5 bg-black/10 px-3 py-2 text-xs font-medium text-stone-400">
+                                Ticket {{ $ticketNumber }}
+                            </div>
                         </div>
-                        <div class="rounded-full border border-white/5 bg-black/10 px-3 py-2 text-xs font-medium text-stone-400">
-                            Ticket {{ $ticketNumber }}
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -112,22 +123,35 @@
                     </div>
                 </template>
 
-                <template x-if="columns.length > 0">
+                <template x-if="columns.length > 0 && filteredRows.length === 0">
+                    <div class="px-6 py-12 text-center">
+                        <div class="mx-auto max-w-md rounded-[24px] border border-dashed border-[#3a3029] bg-[#211b18] px-6 py-10">
+                            <p class="text-base font-semibold text-stone-100">Sin coincidencias</p>
+                            <p class="mt-2 text-sm leading-6 text-stone-400">
+                                No hay filas que coincidan con la busqueda actual dentro del resultado cargado.
+                            </p>
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="columns.length > 0 && filteredRows.length > 0">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
+                        <table class="min-w-full w-full table-fixed text-sm">
                             <thead class="border-b border-white/5 bg-[#211b18] text-stone-300">
                                 <tr>
+                                    <th class="w-16 whitespace-nowrap px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-500">#</th>
                                     <template x-for="column in columns" :key="column">
-                                        <th class="whitespace-nowrap px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.24em]" x-text="column"></th>
+                                        <th class="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.24em]" x-text="column"></th>
                                     </template>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5 bg-[#1a1512]">
                                 <template x-for="(row, rowIndex) in paginatedRows" :key="rowIndex">
                                     <tr class="hover:bg-[#221c18]">
+                                        <td class="whitespace-nowrap px-5 py-4 align-top text-sm font-medium tabular-nums text-stone-500" x-text="((page - 1) * perPage) + rowIndex + 1"></td>
                                         <template x-for="column in columns" :key="`${rowIndex}-${column}`">
                                             <td class="max-w-sm px-5 py-4 align-top text-stone-300">
-                                                <span class="sql-cell" :class="{ 'sql-cell-null': row[column] === null || row[column] === undefined }" x-text="formatCell(row[column])"></span>
+                                                <span :class="{ 'sql-cell-null': row[column] === null || row[column] === undefined, 'sql-cell-value': !(row[column] === null || row[column] === undefined) }" x-text="formatCell(row[column])"></span>
                                             </td>
                                         </template>
                                     </tr>
@@ -225,18 +249,42 @@
                     title,
                     columns: [],
                     rows: [],
+                    search: '',
                     loading: false,
                     error: null,
                     executionTimeMs: 0,
                     rowCount: 0,
                     page: 1,
                     perPage: 25,
+                    get filteredRows() {
+                        const query = this.search.trim().toLowerCase();
+
+                        if (!query) {
+                            return this.rows;
+                        }
+
+                        return this.rows.filter((row) => {
+                            return this.columns.some((column) => {
+                                const value = row[column];
+
+                                if (value === null || value === undefined) {
+                                    return 'null'.includes(query);
+                                }
+
+                                if (typeof value === 'object') {
+                                    return JSON.stringify(value).toLowerCase().includes(query);
+                                }
+
+                                return String(value).toLowerCase().includes(query);
+                            });
+                        });
+                    },
                     get totalPages() {
-                        return Math.max(1, Math.ceil(this.rows.length / this.perPage));
+                        return Math.max(1, Math.ceil(this.filteredRows.length / this.perPage));
                     },
                     get paginatedRows() {
                         const start = (this.page - 1) * this.perPage;
-                        return this.rows.slice(start, start + this.perPage);
+                        return this.filteredRows.slice(start, start + this.perPage);
                     },
                     async load() {
                         this.loading = true;
@@ -260,6 +308,7 @@
                             this.executionTimeMs = payload.executionTimeMs || 0;
                             this.rowCount = payload.rowCount || 0;
                             this.page = 1;
+                            this.search = '';
                         } catch (error) {
                             this.columns = [];
                             this.rows = [];

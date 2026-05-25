@@ -20,25 +20,31 @@ body {
     animation: sql-spin 0.8s linear infinite;
 }
 
-.sql-cell {
-    display: inline-block;
+.sql-cell-value {
+    display: inline;
     max-width: 24rem;
     overflow-wrap: anywhere;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 0.9rem;
-    background: #221c18;
-    padding: 0.45rem 0.7rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.78rem;
-    line-height: 1.45;
+    font-size: 0.82rem;
+    line-height: 1.6;
     color: #e7e5e4;
 }
 
 .sql-cell-null {
-    border-color: rgba(251, 191, 36, 0.18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(251, 191, 36, 0.18);
+    border-radius: 9999px;
     background: rgba(120, 53, 15, 0.28);
+    padding: 0.22rem 0.62rem;
+    min-height: 1.7rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
     color: #fcd34d;
     font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.05);
 }
 
 .sql-status-row {
